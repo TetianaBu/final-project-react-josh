@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
 import clsx from "clsx";
+import { LayoutGroup, motion } from "framer-motion";
 
 import { range } from "@/utils";
 import Card from "@/components/Card";
 import SliderControl from "@/components/SliderControl";
-import { LayoutGroup, motion } from "framer-motion";
 
 import Equation from "./Equation";
 import styles from "./DivisionGroupsDemo.module.css";
@@ -20,11 +20,10 @@ function DivisionGroupsDemo({
   const [numOfGroups, setNumOfGroups] = React.useState(initialNumOfGroups);
 
   const numOfItemsPerGroup = Math.floor(numOfItems / numOfGroups);
+  const totalNumInGroups = numOfGroups * numOfItemsPerGroup;
 
   const remainder = includeRemainderArea ? numOfItems % numOfGroups : null;
 
-  // When we're splitting into 1-3 groups, display side-by-side
-  // columns. When we get to 4, it should switch to a 2x2 grid.
   const gridStructure =
     numOfGroups < 4
       ? {
@@ -52,22 +51,28 @@ function DivisionGroupsDemo({
 
         <div className={styles.demoWrapper}>
           <div className={clsx(styles.demoArea)} style={gridStructure}>
-            {range(numOfGroups).map((groupIndex) => (
-              <div key={groupIndex} className={styles.group}>
-                {range(numOfItemsPerGroup).map((index) => {
-                  const totalInPreviousGroups = groupIndex * numOfItemsPerGroup;
-                  const layoutId = `${id}-${index + totalInPreviousGroups}`;
+            {range(numOfGroups).map((groupIndex) => {
+              const totalInPreviousGroups = groupIndex * numOfItemsPerGroup;
 
-                  return (
-                    <motion.div
-                      key={layoutId}
-                      layoutId={layoutId}
-                      className={styles.item}
-                    />
-                  );
-                })}
-              </div>
-            ))}
+              return (
+                <div key={groupIndex} className={styles.group}>
+                  {range(
+                    totalInPreviousGroups,
+                    totalInPreviousGroups + numOfItemsPerGroup
+                  ).map((index) => {
+                    const layoutId = `${id}-${index}`;
+
+                    return (
+                      <motion.div
+                        key={layoutId}
+                        layoutId={layoutId}
+                        className={styles.item}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -75,9 +80,19 @@ function DivisionGroupsDemo({
           <div className={styles.remainderArea}>
             <p className={styles.remainderHeading}>Remainder Area</p>
 
-            {range(remainder).map((index) => {
-              return <div key={index} className={styles.item} />;
-            })}
+            {range(totalNumInGroups, numOfItems)
+              .reverse()
+              .map((index) => {
+                const layoutId = `${id}-${index}`;
+
+                return (
+                  <motion.div
+                    key={layoutId}
+                    layoutId={layoutId}
+                    className={styles.item}
+                  />
+                );
+              })}
           </div>
         )}
 
